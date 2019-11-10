@@ -80,15 +80,33 @@ rm(p1,p2,p3)
 ```
 
 ```{r}
-ggplot(bank, aes(campaign, previous)) + 
-  geom_point() 
+qplot(x=campaign, y=previous, data=bank,
+      color = y,
+      shape = y,
+      xlab = "# of contacts in this campaign",
+      ylab = "# of contacts in previous campaign"
+      ) 
 ```
 
 ```{r}
 bank <- bank[!(bank$previous>200),]
 
-ggplot(bank, aes(campaign, previous)) + 
-  geom_point() 
+qplot(x=campaign, y=previous, data=bank,
+      color = y,
+      shape = y,
+      xlab = "# of contacts in this campaign",
+      ylab = "# of contacts in previous campaign"
+      )
+```
+
+```{r}
+library(tidyr)
+library(dplyr)
+
+
+bank <- bank %>% 
+        mutate(new_target = ifelse(campaign > 0 & pdays==-1 ,"Yes","No")) %>%
+        mutate(loyal_customers = ifelse(previous < 10 & pdays!=-1,"Yes","No"))
 ```
 
 
