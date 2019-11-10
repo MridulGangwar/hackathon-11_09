@@ -8,11 +8,52 @@ This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute
 Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
 ```{r}
-bank<-read.csv("bank-additional-full.csv",header=T,sep=";")
+bank<-read.csv("bank-full.csv",header=T,sep=";")
+summary(bank)
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+```{r}
+library(ggplot2)
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+ggplot(data=bank, aes(bank$day)) + 
+  geom_histogram(breaks=seq(0, 35, by = 2),
+                  col="#7D4427", 
+                 fill="#AEBD38") + 
+  labs(title="Histogram for Day") +
+  labs(x="Day", y="Count") 
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+```
+
+```{r}
+ggplot(bank, aes(day, fill = y)) +
+  geom_bar()
+```
+```{r}
+ggplot(data=bank, aes(bank$duration)) + 
+  geom_histogram(breaks=seq(0, 3000, by = 200),
+                  col="#7D4427", 
+                 fill="#AEBD38") + 
+  labs(title="Histogram for Duration") +
+  labs(x="Last contacted duration", y="Count") 
+```
+
+```{r}
+#since the duration is left skewed. We need to transform the make it 
+bank$std_duration <- (bank$duration - min(bank$duration))/ (max(bank$duration) - min(bank$duration))
+```
+
+```{r}
+ggplot(bank, aes(month, fill = y)) +
+  geom_bar()
+```
+
+```{r}
+ggplot(data=bank, aes(bank$campaign)) + 
+  geom_histogram(breaks=seq(0, 60, by = 1),
+                  col="#7D4427", 
+                 fill="#AEBD38") + 
+  labs(title="Histogram for Campaign") +
+  labs(x="# of time person was contacted during the campaign", y="Count") 
+```
+
