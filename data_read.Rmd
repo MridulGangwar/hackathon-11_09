@@ -38,10 +38,6 @@ ggplot(data=bank, aes(bank$duration)) +
   labs(x="Last contacted duration", y="Count") 
 ```
 
-```{r}
-#since the duration is left skewed. We need to transform the make it 
-bank$std_duration <- (bank$duration - min(bank$duration))/ (max(bank$duration) - min(bank$duration))
-```
 
 ```{r}
 ggplot(bank, aes(month, fill = y)) +
@@ -55,5 +51,86 @@ ggplot(data=bank, aes(bank$campaign)) +
                  fill="#AEBD38") + 
   labs(title="Histogram for Campaign") +
   labs(x="# of time person was contacted during the campaign", y="Count") 
+```
+
+```{r}
+library(corrplot)
+nums <- unlist(lapply(bank, is.numeric)) 
+
+numeric_bank <- bank[ , nums]
+numeric_bank$y <- as.numeric(bank$y)
+
+corr_matrix <- cor(numeric_bank)
+
+# with circles
+corrplot(corr_matrix,
+         method = 'number',
+         type = "lower")
+```
+
+```{r}
+library(gridExtra)
+
+p1 <- ggplot(aes(x=balance),data=bank) + geom_histogram()
+p2 <- p1 +scale_x_log10()
+p3 <- p2 +scale_x_sqrt()
+
+grid.arrange(p1,p2,p3,ncol=1)
+rm(p1,p2,p3)
+```
+
+```{r}
+ggplot(bank, aes(campaign, previous)) + 
+  geom_point() 
+```
+
+```{r}
+bank <- bank[!(bank$previous>200),]
+
+ggplot(bank, aes(campaign, previous)) + 
+  geom_point() 
+```
+
+
+```{r}
+library(caret)
+
+target <- bank$y
+bank$y <- NULL
+
+dmy <- dummyVars(" ~ .", data = bank)
+transformed_data <- data.frame(predict(dmy, newdata = bank))
+
+#since the duration is left skewed. We need to transform the make it 
+transformed_data$normalized_age <- sqrt(transformed_data$age)
+transformed_data$age <- NULL
+
+transformed_data$normalized_duration <- log(1+transformed_data$duration)
+transformed_data$duration <-NULL
+
+transformed_data$target <- target
+```
+
+```{r}
+#splitting train and testing set (50% ratio)
+smp_size <- floor(0.7 * nrow(transformed_data))
+set.seed(1)
+train_indices <- sample(seq_len(nrow(transformed_data)),size=smp_size)
+
+xtrain <- transformed_data[train_indices,]
+xtest <- transformed_data[-train_indices,] 
+
+print(prop.table(table(xtrain$target)))
+```
+
+
+```{r}
+#sampling
+library(DMwR)
+
+xtrain <- SMOTE(target ~., xtrain, perc.over = 300, k = 5, perc.under = 150)
+#trainSplit$target <- as.numeric(trainSplit$target)
+
+print(prop.table(table(xtrain$target)))
 ```
 
